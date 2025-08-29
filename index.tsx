@@ -107,8 +107,17 @@ async function generate(message: string) {
     });
 
     if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || `Request failed with status ${response.status}`);
+        let errorMessage = `Request failed with status ${response.status} - ${response.statusText}`;
+        try {
+            // Try to parse as JSON, which is what our /api/generate endpoint should return on error
+            const err = await response.json();
+            errorMessage = err.error?.message || errorMessage;
+        } catch (e) {
+            // If JSON parsing fails, the response is not what we expected. Use the raw text.
+            const textError = await response.text();
+            errorMessage = textError || errorMessage;
+        }
+        throw new Error(errorMessage);
     }
 
     if (!response.body) {

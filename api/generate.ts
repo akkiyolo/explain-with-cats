@@ -33,17 +33,14 @@ export default async function handler(req: Request) {
       return new Response('Missing message in request body', {status: 400});
     }
 
-    const chat = ai.chats.create({
-      model: 'gemini-2.0-flash-preview-image-generation',
+    const result = await ai.models.generateContentStream({
+      model: 'gemini-2.5-flash-image-preview',
+      contents: message + additionalInstructions,
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
       },
-      history: [],
     });
 
-    const result = await chat.sendMessageStream({
-      message: message + additionalInstructions,
-    });
 
     // Transform the stream from the API to a new ReadableStream
     const stream = new ReadableStream({
